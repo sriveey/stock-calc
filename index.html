@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Risk Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh; /* Full viewport height */
+            display: flex;
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+            background-color: #f8f9fa; /* Light background color */
+        }
+        .container {
+            text-align: center;
+            background-color: #fff; /* White background for the card */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+            padding: 20px; /* Padding around content */
+            width: 300px; /* Fixed width */
+        }
+        input[type="text"], input[type="range"] {
+            width: calc(100% - 20px); /* Full width minus padding */
+            padding: 10px; /* Padding inside the input */
+            margin: 10px 0; /* Space between inputs */
+            border: 1px solid #ced4da; /* Light border */
+            border-radius: 4px; /* Rounded corners */
+            font-size: 16px; /* Font size */
+            box-sizing: border-box; /* Include padding and border in the width */
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 24px; /* Larger font for result */
+            color: #343a40; /* Dark text color */
+            display: flex; /* Flexbox for aligning items */
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+        }
+        .tooltip {
+            position: relative; /* Relative positioning for the tooltip */
+            display: inline-block; /* Inline block for the icon */
+            margin-left: 5px; /* Space between risk score and icon */
+            cursor: pointer; /* Pointer cursor for hover */
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden; /* Hidden by default */
+            width: 200px; /* Width of the tooltip */
+            background-color: #555; /* Dark background */
+            color: #fff; /* White text */
+            text-align: center; /* Centered text */
+            border-radius: 6px; /* Rounded corners */
+            padding: 5px; /* Padding around text */
+            position: absolute; /* Absolute positioning */
+            z-index: 1; /* On top of other elements */
+            bottom: 100%; /* Above the icon */
+            left: 50%; /* Center horizontally */
+            margin-left: -100px; /* Center tooltip */
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.3s; /* Fade in effect */
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible; /* Show tooltip on hover */
+            opacity: 1; /* Make it visible */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <input type="text" id="ticker" placeholder="Enter stock ticker (e.g., AAPL)" />
+        
+        <input type="range" id="holdingPeriod" min="1" max="24" value="12" />
+        <span id="holdingPeriodValue">12</span> months
+
+        <div class="result" id="result">
+            Risk Score: <span id="riskScore">0.00</span>
+            <div class="tooltip">?
+                <span class="tooltiptext">The risk score is calculated based on historical volatility and market trends.</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const holdingPeriodSlider = document.getElementById('holdingPeriod');
+        const holdingPeriodValue = document.getElementById('holdingPeriodValue');
+        const riskScoreDisplay = document.getElementById('riskScore');
+
+        // Update holding period value display
+        holdingPeriodSlider.oninput = function() {
+            holdingPeriodValue.textContent = this.value;
+            calculateRisk();
+        };
+
+        // Calculate risk score
+        async function calculateRisk() {
+            const ticker = document.getElementById('ticker').value;
+            const holdingPeriod = holdingPeriodSlider.value;
+
+            if (!ticker) {
+                riskScoreDisplay.textContent = '0.00';
+                return;
+            }
+
+            const response = await fetch(`http://127.0.0.1:8080/risk?ticker=${ticker}&holding_period=${holdingPeriod}`);
+
+            if (response.ok) {
+                const data = await response.json();
+                riskScoreDisplay.textContent = data.risk_score.toFixed(2);
+            } else {
+                riskScoreDisplay.textContent = 'Error';
+            }
+        }
+    </script>
+
+</body>
+</html>
